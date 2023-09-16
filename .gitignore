@@ -2,3 +2,7 @@
 _minted*
 *.pdf
 *.tex
+.clangd
+.cache
+compile_commands.json
+build
