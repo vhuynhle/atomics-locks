@@ -1,0 +1,75 @@
+#+TITLE: Atomics
+#+LATEX_HEADER: \usepackage[scaled]{helvet} \renewcommand\familydefault{\sfdefault}
+#+LATEX_HEADER_EXTRA: \usepackage{mdframed}
+#+LATEX_HEADER_EXTRA: \BeforeBeginEnvironment{minted}{\begin{mdframed}}
+#+LATEX_HEADER_EXTRA: \AfterEndEnvironment{minted}{\end{mdframed}}
+
+\newpage
+* Memory Ordering
+
+The memory ordering definition in Rust is the same as [[https://en.cppreference.com/w/cpp/atomic/memory_order][C++ Memory Order]].
+
+#+begin_src rust
+  // std::sync::atomic::Ordering
+  pub enum Ordering {
+      Relaxed,
+      Release,
+      Acquire,
+      AcqRel,
+      SeqCst,
+  }
+#+end_src
+
+** Relaxed Ordering
+
+Relaxed Ordering ensures consistency on /a single atomic variable/, but /not/ on the relative order of operations /between different variables/.
+
+In C++14+ and Rust, values are not allowed to circularly depends on their own computation.
+
+*** Example
+
+Atomic operations tagged with relaxed ordering are not synchronization operations. Consider the following code snippet:
+
+#+begin_src cpp
+  // Initially, x and y are 0.
+
+  // Thread 1
+  r1 = y.load(std::memory_order_relaxed);  // A
+  x.store(r1, std::memory_order_relaxed);  // B
+
+  // Thread 2
+  r2 = x.load(std::memory_order_relaxed);  // C
+  y.store(42, std::memory_order_relaxed);  // D
+#+end_src
+
+The code snippet above can result in ~r1 = r2 = 42~:
+
+- Within thread 1, A is /sequenced-before/ B;
+- Within thread 2, C is /sequenced-before/ D;
+- The effect of D on ~y~ can be visible to to A, while the effect of B on ~x~ can be visible to C.
+
+*** Example
+Out-of-thin-air values are not allowed to circularly depends on their own computation.
+
+#+begin_src cpp
+  // x = y = 0 initially
+
+  // Thread 1
+  r1 = y.load(std::memory_order_relaxed);      // A
+  if (r1 == 42) {
+      x.store(r1, std::memory_order_relaxed);  // B
+  }
+
+  // Thread 2
+  r2 = x.load(std::memory_order_relaxed);      // C
+  if (r2 == 42) {
+      y.store(42, std::memory_order_relaxed);  // D
+  }
+#+end_src
+
+This code is not allowed to produce =x = y = 42=, because:
+- =y = 42= is only possible if the store operation D is executed
+- D is only executed if the load operation C returns 42
+- The load operation C returns 42 only if the store operation B is executed
+- The store operation B is executed only if the load operation A returns 42
+- This is only possible if =y= was already set the 42 out-of-thin-air.
