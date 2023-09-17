@@ -34,3 +34,48 @@ A possible optimization:
 #+end_src
 
 Later, the processor may decide to increase ~b~ before ~a~, e.g., because ~b~ is available in cache but ~a~ has to be fetched from RAM.
+
+* Happens-before relationship
+
+** The basic rule
+The basic rule is that, within the same thread, everything happens in order.
+
+** Relaxed memory ordering
+The relaxed memory ordering does not guarantee any happens-before relationships across threads.
+
+** Example: the basic rule and relaxed memory ordering
+
+#+begin_src rust
+  static X: AtomicI32 = AtomicI32::new(0);
+  static Y: AtomicI32 = AtomicI32::new(0);
+
+  fn a() {
+      X.store(10, Relaxed); // 1
+      Y.store(20, Relaxed); // 2
+  }
+
+  fn b() {
+      let y = Y.load(Relaxed); // 3
+      let x = X.load(Relaxed); // 4
+
+      println("{x} {y}");
+  }
+#+end_src
+
+According to the basic rule:
+
+- (1) happens before (2)
+- (3) happens before (4)
+
+Because we use relaxed memory ordering, there are no other happens-before relationships among the statements (1), (2), (3), (4).
+
+The possible outputs are:
+
+1. "10 20", e.g., if the operations are in the order (1)(2)(3)(4)
+2. "0 0", e.g., if the operations are in the order (3)(4)(1)(2)
+3. "10 0", e.g., if the operations are in the order (1)(3)(2)(4), (1)(3)(4)(2), (3)(1)(4)(2), (3)(4)(1)(2).
+4. "0 20". There is /no global consistent order/ of the operations that can result in this output. The reason is that:
+   + From the perspective of thread ~a~, (1) happens-before (2) (according to the basic rule), however,
+   + From the perspective of thread ~b~, (2) may appear to happen before (1).
+
+With the demo program [[file:src/bin/relaxed_ordering.rs]], only outcomes 1, 2, 3, 4 are observable after several test runs. However, that is not guaranteed.
