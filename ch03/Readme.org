@@ -111,3 +111,55 @@ In this example:
 * Relaxed Ordering
 
 The relaxed ordering guarantees a total modification order of each individual atomic variable.
+
+** Example
+
+#+begin_src cpp
+  static X: AtomicI32 = AtomicI32::new(0);
+
+  fn a() {
+      X.fetch_add(5, Relaxed);
+      X.fetch_add(10, Relaxed);
+  }
+
+  fn b() {
+      let a = X.load(Relaxed);
+      let b = X.load(Relaxed);
+      let c = X.load(Relaxed);
+      let d = X.load(Relaxed);
+      println!("{a} {b} {c} {d}");
+  }
+#+end_src
+
+Due to the total modification order guarantee on ~X~, there's only one possible modification order: 0 $\rightarrow$ 5 $\rightarrow$ 15. Some possible outputs with this modification order:
+
+- 0 0 0 0
+- 0 0 0 5
+- 0 0 5 15
+- ...
+- 15 15 15 15
+
+Now considering splitting ~a~ into two functions running in two threads:
+#+begin_src rust
+  fn a1() {
+      X.fetch_add(5, Relaxed);
+  }
+
+  fn a2() {
+      X.fetch_add(10, Relaxed);
+  }
+#+end_src
+
+There are 2 possible modification orders:
+
+- 0 $\rightarrow$ 5 $\rightarrow$ 15
+- 0 $\rightarrow$ 10 $\rightarrow$ 15
+
+Possible outputs are:
+- 0 0 0 0
+- 0 0 0 5
+- 0 0 0 10
+- 0 0 5 15
+- 0 0 10 15
+- ...
+- 15 15 15 15
