@@ -81,3 +81,29 @@ The possible outputs are:
 With the demo program [[file:src/bin/relaxed_ordering.rs]], only outcomes 1, 2, 3, 4 are observable after several test runs. However, that is not guaranteed.
 
 ** Spawning and Joining
+Spawning a thread creates a happens-before relationship between what happens before and after the ~spawn()~ function call.
+
+Joining a thread creates a happens-before relationship between what happens before and after the ~join()~ function call.
+
+For example:
+
+#+begin_src rust
+    static X: AtomicI32 = AtomicI32::new(0);
+
+  fn main() {
+      X.store(1, Relaxed);      // (1)
+      let t = thread::spawn(f);
+      X.store(2, Relaxed);      // (2)
+      t.join().unwrap();
+      X.store(3, Relaxed);      // (3)
+  }
+
+  fn f() {
+      let x = X.load(Relaxed);  // (4)
+      assert!(x == 1 || x == 2);
+  }
+#+end_src
+
+In this example:
+- The ~spawn()~ function call establishes the happens-before relationship between (1) and (2) and between (1) and (4).
+- The ~join()~ function call establishes the happens-before relationship between (2) and (3) and between (4) and (3).=
