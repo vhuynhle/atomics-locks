@@ -107,3 +107,7 @@ For example:
 In this example:
 - The ~spawn()~ function call establishes the happens-before relationship between (1) and (2) and between (1) and (4).
 - The ~join()~ function call establishes the happens-before relationship between (2) and (3) and between (4) and (3).=
+
+* Relaxed Ordering
+
+The relaxed ordering guarantees a total modification order of each individual atomic variable.
