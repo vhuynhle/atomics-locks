@@ -7,3 +7,4 @@ add_executable(relaxed_ordering_progress_reporting
 add_executable(relaxed_ordering_progress_reporting_multiworkers
   src/relaxed_ordering_progress_reporting_multiworkers.cpp)
 add_executable(compare_exchange_id_allocation src/compare_exchange_id_allocation.cpp)
+add_executable(compare_exchange_lazy_init src/compare_exchange_lazy_init.cpp)
