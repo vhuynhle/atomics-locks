@@ -1,0 +1,36 @@
+#+TITLE: Memory Ordering
+#+LATEX_HEADER: \usepackage[scaled]{helvet} \renewcommand\familydefault{\sfdefault}
+#+LATEX_HEADER_EXTRA: \usepackage{mdframed}
+#+LATEX_HEADER_EXTRA: \BeforeBeginEnvironment{minted}{\begin{mdframed}}
+#+LATEX_HEADER_EXTRA: \AfterEndEnvironment{minted}{\end{mdframed}}
+
+
+* Reordering and Optimizations
+
+- The compiler and processor may modify and re-order instructions of a program to make it faster, as long as that optimization does not change the result of the program.
+- The verification of the same result does not consider other threads.
+- We have to tell the compiler and processor what they can and can't do with our atomic operations.
+- Memory ordering allows us to do that.
+
+
+** Example
+
+Given the following source code, the compiler may combine the increment operations on ~a~ into a single operation.
+
+#+begin_src rust
+  fn f(a: &mut i32, b: &mut i32) {
+      *a += 1;
+      *b += 1;
+      *a += 1;
+  }
+#+end_src
+
+A possible optimization:
+#+begin_src rust
+  fn f(a: &mut i32, b: &mut i32) {
+      *a += 2;
+      *b += 1;
+  }
+#+end_src
+
+Later, the processor may decide to increase ~b~ before ~a~, e.g., because ~b~ is available in cache but ~a~ has to be fetched from RAM.
