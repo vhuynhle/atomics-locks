@@ -4,7 +4,6 @@
 #+LATEX_HEADER_EXTRA: \BeforeBeginEnvironment{minted}{\begin{mdframed}}
 #+LATEX_HEADER_EXTRA: \AfterEndEnvironment{minted}{\end{mdframed}}
 
-\newpage
 * Memory Ordering
 
 The memory ordering definition in Rust is the same as [[https://en.cppreference.com/w/cpp/atomic/memory_order][C++ Memory Order]].
@@ -24,11 +23,11 @@ The memory ordering definition in Rust is the same as [[https://en.cppreference.
 
 Relaxed Ordering ensures consistency on /a single atomic variable/, but /not/ on the relative order of operations /between different variables/.
 
-In C++14+ and Rust, values are not allowed to circularly depends on their own computation.
+In C++14+ and Rust, values are not allowed to circularly depend on their own computation.
 
 *** Example
 
-Atomic operations tagged with relaxed ordering are not synchronization operations. Consider the following code snippet:
+Atomic operations tagged with relaxed memory ordering are not synchronization operations. Consider the following code snippet:
 
 #+begin_src cpp
   // Initially, x and y are 0.
@@ -46,10 +45,10 @@ The code snippet above can result in ~r1 = r2 = 42~:
 
 - Within thread 1, A is /sequenced-before/ B;
 - Within thread 2, C is /sequenced-before/ D;
-- The effect of D on ~y~ can be visible to to A, while the effect of B on ~x~ can be visible to C.
+- The effect of D on ~y~ can be visible to A, while the effect of B on ~x~ can be visible to C.
 
 *** Example
-Out-of-thin-air values are not allowed to circularly depends on their own computation.
+Out-of-thin-air values are not allowed to circularly depend on their own computation.
 
 #+begin_src cpp
   // x = y = 0 initially
@@ -72,4 +71,4 @@ This code is not allowed to produce =x = y = 42=, because:
 - D is only executed if the load operation C returns 42
 - The load operation C returns 42 only if the store operation B is executed
 - The store operation B is executed only if the load operation A returns 42
-- This is only possible if =y= was already set the 42 out-of-thin-air.
+- This is only possible if =y= was already set to 42 out-of-thin-air.

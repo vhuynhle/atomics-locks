@@ -1,0 +1,1 @@
+#+TITLE Notes on [[https://marabos.nl/atomics][Rust Atomics and Locks]]
