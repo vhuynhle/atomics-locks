@@ -79,3 +79,5 @@ The possible outputs are:
    + From the perspective of thread ~b~, (2) may appear to happen before (1).
 
 With the demo program [[file:src/bin/relaxed_ordering.rs]], only outcomes 1, 2, 3, 4 are observable after several test runs. However, that is not guaranteed.
+
+** Spawning and Joining
