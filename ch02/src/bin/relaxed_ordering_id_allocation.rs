@@ -17,5 +17,12 @@ fn main() {
 
 fn allocate_new_id() -> u64 {
     static NEXT_ID: AtomicU64 = AtomicU64::new(0);
-    NEXT_ID.fetch_add(1, Ordering::Relaxed)
+    let id = NEXT_ID.fetch_add(1, Ordering::Relaxed);
+
+    // Check for overflow
+    if id >= 1000 {
+        NEXT_ID.fetch_sub(1, Ordering::Relaxed);
+        panic!("Too many ID!");
+    }
+    id
 }
