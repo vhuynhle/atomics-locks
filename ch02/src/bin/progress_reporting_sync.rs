@@ -9,6 +9,7 @@ use std::{
 /// variable.
 fn main() {
     let num_done = AtomicUsize::new(0);
+    let main_thread = thread::current();
 
     thread::scope(|s| {
         // A background thread doing the work
@@ -16,6 +17,7 @@ fn main() {
             for i in 0..100 {
                 process_item(i);
                 num_done.store(i + 1, Ordering::Relaxed);
+                main_thread.unpark(); // Wake up main thread
             }
         });
 
@@ -31,7 +33,7 @@ fn main() {
                 break;
             }
 
-            thread::sleep(Duration::from_secs(1));
+            thread::park_timeout(Duration::from_secs(1));
         }
     })
 }
