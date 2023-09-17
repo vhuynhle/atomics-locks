@@ -1,1 +1,6 @@
 #+TITLE: Notes on [[https://marabos.nl/atomics][Rust Atomics and Locks]]
+
+Chapter notes:
+
+- [[file:ch02/Readme.org][Chapter 2]]
+- [[file:ch03/Readme.org][Chapter 3]]
