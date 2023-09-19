@@ -1,5 +1,6 @@
 use std::{
     collections::HashMap,
+    fmt::Display,
     sync::{
         atomic::{AtomicI32, Ordering},
         Arc, Mutex,
@@ -17,16 +18,31 @@ fn a2() {
     X.fetch_add(10, Ordering::Relaxed);
 }
 
-fn b(observations: Arc<Mutex<HashMap<(i32, i32, i32, i32), usize>>>) {
+#[derive(Eq, Hash, PartialEq)]
+struct Observation {
+    a: i32,
+    b: i32,
+    c: i32,
+    d: i32,
+}
+
+impl Display for Observation {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "({}, {}, {}, {})", self.a, self.b, self.c, self.d)
+    }
+}
+
+fn b(observations: Arc<Mutex<HashMap<Observation, usize>>>) {
     let a = X.load(Ordering::Relaxed);
     let b = X.load(Ordering::Relaxed);
     let c = X.load(Ordering::Relaxed);
     let d = X.load(Ordering::Relaxed);
+    let observation = Observation { a, b, c, d };
 
     observations
         .lock()
         .unwrap()
-        .entry((a, b, c, d))
+        .entry(observation)
         .and_modify(|count| {
             *count += 1;
         })
@@ -34,7 +50,7 @@ fn b(observations: Arc<Mutex<HashMap<(i32, i32, i32, i32), usize>>>) {
 }
 
 fn main() {
-    let observations: Arc<Mutex<HashMap<(i32, i32, i32, i32), usize>>> =
+    let observations: Arc<Mutex<HashMap<Observation, usize>>> =
         Arc::new(Mutex::new(HashMap::new()));
     const EXPERIMENTS: usize = 1_000_000;
 
@@ -61,7 +77,7 @@ fn main() {
         .lock()
         .unwrap()
         .iter()
-        .for_each(|((a, b, c, d), count)| {
-            println!("{a} {b} {c} {d} --> {count}");
+        .for_each(|(observation, count)| {
+            println!("{observation} --> {count}");
         });
 }
