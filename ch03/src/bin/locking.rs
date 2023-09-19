@@ -27,6 +27,6 @@ fn main() {
     });
 
     unsafe {
-        println!("{}", DATA);
+        println!("{}, length: {}", DATA, DATA.len());
     }
 }
