@@ -163,3 +163,9 @@ Possible outputs are:
 - 0 0 10 15
 - ...
 - 15 15 15 15
+
+* Release and Acquire Ordering
+
+#+begin_quote
+A happens-before relationship is formed when an acquire-load operation observes the result of a release-store operation.
+#+end_quote
