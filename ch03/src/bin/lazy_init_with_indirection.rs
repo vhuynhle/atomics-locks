@@ -17,6 +17,11 @@ fn generate_data() -> Data {
 fn get_data() -> &'static Data {
     static PTR: AtomicPtr<Data> = AtomicPtr::new(std::ptr::null_mut());
 
+    // Load PTR with memory order Acquire
+    // If the result, p, is not NULL, then some other thread must have
+    // initialize PTR with Release order.
+    // The Release-Acquire order ensure that the initialization of data
+    // happens-before we get here, and the result p points to initialized data.
     let mut p = PTR.load(Ordering::Acquire);
 
     if p.is_null() {
