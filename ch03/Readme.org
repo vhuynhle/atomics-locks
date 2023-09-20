@@ -169,3 +169,15 @@ Possible outputs are:
 #+begin_quote
 A happens-before relationship is formed when an acquire-load operation observes the result of a release-store operation.
 #+end_quote
+
+* Sequentially Consistent Ordering
+
+This memory ordering guarantees:
+
+1. acquire ordering for loads,
+2. release ordering for stores,
+3. a globally consistent order of operations
+
+#+begin_quote
+Only when both sides of a happens-before relationship use SeqCst ordering is it guaranteed to be consistent with the single total order of SeqCst operations.
+#+end_quote
