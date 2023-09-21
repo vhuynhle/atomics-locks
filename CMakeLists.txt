@@ -1,5 +1,5 @@
-project(rust-atomics)
 cmake_minimum_required(VERSION 3.22)
+project(rust-atomics)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 

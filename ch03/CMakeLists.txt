@@ -7,3 +7,4 @@ add_executable(relaxed_ordering_total_modification_order_v2
 add_executable(acquire_release src/cpp/acquire_release.cpp)
 add_executable(locking src/cpp/locking.cpp)
 add_executable(lazy_init_with_indirection src/cpp/lazy_init_with_indirection.cpp)
+add_executable(sequentially_consistent_ordering src/cpp/sequentially_consistent_ordering.cpp)
