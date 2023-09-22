@@ -181,3 +181,55 @@ This memory ordering guarantees:
 #+begin_quote
 Only when both sides of a happens-before relationship use SeqCst ordering is it guaranteed to be consistent with the single total order of SeqCst operations.
 #+end_quote
+
+* Fences
+
+** Release and acquire fences
+
+The store of a release-acquire relationship
+
+#+begin_src rust
+  a.store(1, Release);
+#+end_src
+
+is equivalent to
+
+#+begin_src rust
+  fence(Release);
+  a.store(1, Relaxed);
+#+end_src
+
+The load of a release-acquire relationship
+
+#+begin_src rust
+  a.load(Acquire);
+#+end_src
+
+is equivalent to
+
+#+begin_src rust
+  a.load(Relaxed);
+  fence(Acquire);
+#+end_src
+
+
+
+Consider two threads:
+#+begin_src rust
+  // Thread 1
+  fence(Release);
+  A.store(1, Relaxed);
+  B.store(2, Relaxed);
+  C.store(3, Relaxed);
+#+end_src
+
+#+begin_src rust
+  // Thread 2
+  A.load(Relaxed);
+  B.load(Relaxed);
+  C.load(Relaxed);
+  fence(Acquire);
+#+end_src
+
+If any of the load operations on thread 2 loads the value from the corresponding
+store operation on thread 1, the release fence happens-before the acquire fence.
