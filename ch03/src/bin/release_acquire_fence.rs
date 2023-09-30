@@ -6,11 +6,12 @@ use std::{
 
 static mut DATA: [u64; 10] = [0; 10];
 
+#[allow(clippy::declare_interior_mutable_const)]
 const ATOMIC_FALSE: AtomicBool = AtomicBool::new(false);
 static READY: [AtomicBool; 10] = [ATOMIC_FALSE; 10];
 
 fn some_calculation(i: u64) -> u64 {
-    (i + 1) as u64
+    i + 1
 }
 
 fn main() {
@@ -42,7 +43,7 @@ fn main() {
         thread::spawn(move || {
             let data = some_calculation(i as u64);
             unsafe {
-                DATA[i as usize] = data;
+                DATA[i] = data;
             }
 
             // Equivalent to:
