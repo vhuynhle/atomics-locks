@@ -1,0 +1,48 @@
+#+TITLE: Channel
+
+* A simple channel implementation
+
+** Implementation
+This implementation uses a queue as the main data structure. To allow safe access from multiple threads, the queue is protected by a mutex.
+
+#+begin_src rust
+  pub struct Channel<T> {
+      queue: Mutex<VecDeque<T>>,
+      item_ready: Condvar,
+  }
+#+end_src
+
+- To send a message:
+  + Lock the mutex
+  + Add the message to the end of the queue
+  + (Unlock the mutex)
+  + Notify potential receivers.
+
+#+begin_src rust
+  pub fn send(&self, message: T) {
+      self.queue.lock().unwrap().push_back(message);
+      self.item_ready.notify_one();
+  }
+#+end_src
+
+- To receive a message:
+  + Lock the mutex
+  + Try to get one item from the queue, and return it (and unlock the mutex)
+  + Otherwise, block until being notified.
+#+begin_src rust
+  pub fn receive(&self) -> T {
+    let mut b = self.queue.lock().unwrap();
+      loop {
+        if let Some(message) = b.pop_front() {
+            return message;
+        }
+        b = self.item_ready.wait(b).unwrap();
+    }
+  }
+#+end_src
+
+This implementation allows any number of sending and receiving threads. However, its performance may not be good in many situations:
+- Because of the shared mutex, any send/receive operation briefly blocks other operations, even when there are messages ready to be received.
+- If the queue has to grow its capacity, all threads must wait for the one thread that does the growing.
+
+A potential issue is that the size of the queue may grow without a bound.
