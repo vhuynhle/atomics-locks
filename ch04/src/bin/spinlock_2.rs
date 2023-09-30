@@ -18,6 +18,7 @@ impl<T> SpinLock<T> {
         }
     }
 
+    #[allow(clippy::mut_from_ref)]
     pub fn lock(&self) -> &mut T {
         while self.locked.swap(true, Ordering::Acquire) {
             std::hint::spin_loop();
@@ -27,7 +28,9 @@ impl<T> SpinLock<T> {
         }
     }
 
-    /// Safety: The &mut T from lock() must be gone before this function
+    /// # Safety
+    ///
+    /// The &mut T from lock() must be gone before this function
     /// can be called.
     pub unsafe fn unlock(&self) {
         self.locked.store(false, Ordering::Release);

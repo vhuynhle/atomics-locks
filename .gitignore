@@ -6,3 +6,4 @@ _minted*
 .cache
 compile_commands.json
 build
+.idea
