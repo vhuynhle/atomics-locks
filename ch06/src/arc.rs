@@ -34,6 +34,20 @@ impl<T> Arc<T> {
         // the Arc object exist.
         unsafe { self.ptr.as_ref() }
     }
+
+    // Use arc: &mut Self instead of &mut self to restrict the invocation of this function to the format
+    // Arc::get_mut() and disallow the form self.get_mut()
+    // Reason: Arc implements Deref, so self.get_mut() may be confused with T.get_mut()
+    pub fn get_mut(arc: &mut Self) -> Option<&mut T> {
+        if arc.data().ref_count.load(Ordering::Relaxed) == 1 {
+            fence(Ordering::Acquire);
+
+            // Safety: Nothing else can access the data, since there's only one Arc, to which we have exclusive access.
+            unsafe { Some(&mut arc.ptr.as_mut().data) }
+        } else {
+            None
+        }
+    }
 }
 
 impl<T> Deref for Arc<T> {
@@ -100,8 +114,7 @@ fn test() {
     // Create two Arcs sharing an object containing a string
     // and a DetectDrop
     let x = Arc::new(("hello", DetectDrop));
-    let y = x.clone();
-
+    let mut y = x.clone();
 
     // Send x to another thread, and use it there
     let t = std::thread::spawn(move || {
@@ -111,12 +124,23 @@ fn test() {
     // In parallel, y should still be usable
     assert_eq!(y.0, "hello");
 
+    // deref_mut returns None if the Arc is shared
+    if let Some(_) = Arc::get_mut(&mut y) {
+        panic!("--- shared Arc should not provide mutable access to internal data ---");
+    }
+
     t.join().unwrap();
     // x has been dropped by now. However, y hasn't been dropped.
     // Thus x::drop() has been called, but that doesn't call
     // the internal drop.
     assert_eq!(NUM_DROPS.load(Ordering::Relaxed), 0);
 
+    // Now y is the only Arc. get_mut should return Some.
+    if let None = Arc::get_mut(&mut y) {
+        panic!(
+            "--- Arc with refcount = 1 should provide mutable access to the underlying data ---"
+        );
+    }
 
     // Drop the remaining Arc
     drop(y);
