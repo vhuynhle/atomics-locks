@@ -64,3 +64,29 @@ Compiled ARM64, for both source code versions:
       ldr w0, [x0]
       ret
 #+end_src
+
+* Read-modify-write operations
+** Non-atomic read-modify-write operations
+
+#+begin_src rust
+  pub fn a(x: &mut i32) {
+      ,*x += 10;
+  }
+#+end_src
+
+On x86-64, the statement can /usually/ be done with a single instruction:
+#+begin_src asm
+  a:
+          add word ptr [rdi], 10
+          ret
+#+end_src
+However, the `add` statement is not atomic, because the processor splits it into several /micro-instructions/.
+
+On ARM64, the statement /usually/ compiles to 3 instructions:
+#+begin_src asm
+  a:
+          ldr w8, [x0]
+          add w8, w8, #10
+          str w8, [x0]
+          ret
+#+end_src
