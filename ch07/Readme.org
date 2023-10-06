@@ -95,7 +95,7 @@ On ARM64, the statement /usually/ compiles to 3 instructions:
           ret
 #+end_src
 
-** The `lock` prefix on x86-64
+** The ~lock~ prefix on x86-64
 
 #+begin_src rust
   pub fn a(x: &mut AtomicI32) {
