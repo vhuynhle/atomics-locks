@@ -1,4 +1,8 @@
 #+TITLE: Understanding the Processor
+#+LATEX_HEADER: \usepackage[scaled]{helvet} \renewcommand\familydefault{\sfdefault}
+#+LATEX_HEADER_EXTRA: \usepackage{mdframed}
+#+LATEX_HEADER_EXTRA: \BeforeBeginEnvironment{minted}{\begin{mdframed}}
+#+LATEX_HEADER_EXTRA: \AfterEndEnvironment{minted}{\end{mdframed}}
 
 * Load and store
 
@@ -25,7 +29,7 @@ Compiled x86-64:
       mov dword ptr [rdi], 0
       ret
 #+end_src
-Translation: Copy data from the zero constant to a memory address stored in the register `rdi`.
+Translation: Copy data from the zero constant to a memory address stored in the register ~rdi~.
 
 Compiled ARM64:
 
@@ -34,7 +38,7 @@ Compiled ARM64:
         str wzr, [x0]
         ret
 #+end_src
-Translation: Copy data from the `wzr` register (always containing 0) to the memory address stored in the register `x0`.
+Translation: Copy data from the ~wzr~ register (always containing 0) to the memory address stored in the register ~x0~.
 
 ** Load
 A non-atomic load and an atomic load with Relaxed ordering compile to the same assembly code.
@@ -77,10 +81,10 @@ Compiled ARM64, for both source code versions:
 On x86-64, the statement can /usually/ be done with a single instruction:
 #+begin_src asm
   a:
-          add word ptr [rdi], 10
+          add dword ptr [rdi], 10
           ret
 #+end_src
-However, the `add` statement is not atomic, because the processor splits it into several /micro-instructions/.
+However, the ~add~ statement is not atomic, because the processor splits it into several /micro-instructions/.
 
 On ARM64, the statement /usually/ compiles to 3 instructions:
 #+begin_src asm
@@ -90,3 +94,45 @@ On ARM64, the statement /usually/ compiles to 3 instructions:
           str w8, [x0]
           ret
 #+end_src
+
+** The `lock` prefix on x86-64
+
+#+begin_src rust
+  pub fn a(x: &mut AtomicI32) {
+      x.fetch_add(10, Relaxed);
+  }
+#+end_src
+
+Compared to the non-atomic version, the ~lock~ prefix is added to the instruction:
+#+begin_src asm
+  a:
+          lock add dword ptr [rdi], 10
+          ret
+#+end_src
+
+If we return the sum, ~xadd~ is used instead of ~add~:
+#+begin_src rust
+  pub fn a(x: &mut AtomicI32) -> i32 {
+      x.fetch_add(10, Relaxed)
+  }
+#+end_src
+compiles to
+
+#+begin_src asm
+  a:
+        mov eax, 10
+        lock xadd dword ptr [rdi], eax
+        ret
+#+end_src
+Instead of using the constant 10, now the code stores 10 in the register ~eax~. The ~xadd~ instruction then stores the result in that register.
+
+The lock prefix can be added to several instructions, including:
+- ~add~, ~xadd~ (as discussed above)
+- ~sub~
+- ~and~
+- ~or~
+- ~xor~
+- ~xchg~ (exchange), with the lock prefix implicitly added
+- ~bts~ (bit test and set)
+- ~btr~ (bit test and reset)
+- ~btc~ (bit test and complement)
