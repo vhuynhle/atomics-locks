@@ -1,0 +1,66 @@
+#+TITLE: Understanding the Processor
+
+* Load and store
+
+** Store
+A non-atomic store and a relaxed atomic store compile to the same assembly code.
+
+#+begin_src rust
+  // Non-atomic store
+  pub fn a(x: &mut i32) {
+      *x = 0;
+  }
+
+  // Atomic store
+  pub fn a(x: &mut AtomicI32) {
+      x.store(0, Relaxed)
+  }
+
+#+end_src
+
+
+Compiled x86-64:
+#+begin_src asm
+  a:
+      mov dword ptr [rdi], 0
+      ret
+#+end_src
+Translation: Copy data from the zero constant to a memory address stored in the register `rdi`.
+
+Compiled ARM64:
+
+#+begin_src asm
+  a:
+        str wzr, [x0]
+        ret
+#+end_src
+Translation: Copy data from the `wzr` register (always containing 0) to the memory address stored in the register `x0`.
+
+** Load
+A non-atomic load and an atomic load with Relaxed ordering compile to the same assembly code.
+
+Source code:
+#+begin_src rust
+  // Non-atomic load
+  pub fn a(x: &i32) -> i32 {
+      *x
+  }
+  // Atomic load with relaxed ordering
+  pub fn (x: &AtomicI32) -> i32 {
+      x.load(Relaxed)
+  }
+#+end_src
+
+Compiled x86-64, for both source code versions:
+#+begin_src asm
+  a:
+      mov eax, dword ptr [rdi]
+      ret
+#+end_src
+
+Compiled ARM64, for both source code versions:
+#+begin_src asm
+  a:
+      ldr w0, [x0]
+      ret
+#+end_src
