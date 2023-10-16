@@ -136,3 +136,35 @@ The lock prefix can be added to several instructions, including:
 - ~bts~ (bit test and set)
 - ~btr~ (bit test and reset)
 - ~btc~ (bit test and complement)
+
+
+* Cache coherence
+** Write-through protocol
+
+** MESI protocol
+
+* Re-ordering
+
+** Re-ordering by the processor
+
+Several ways that a processor can execute instructions out of order:
+
+- Store buffer: Processor cores often have a /store buffer/ which is fast to write to. A processor can write to this buffer then continue to the next instruction. In the background
+
+** Invalidation queues
+
+Invalidation: Instructions to drop a cache line because it is about to be modified and become invalid.
+For performance reason, such requests can be queued for later processing.
+In such scenarios, the caches are no longer always consistent: cache lines may be shortly outdated before they are dropped.
+
+- This doesn't impact single threaded programs.
+- This impacts the visibility of write operations from other cores, which now may appear as slightly delayed.
+
+** Pipelining
+
+Pipelining :: executing sequential operations in parallel if possible.
+
+- This doesn't impact single threaded programs.
+- In multi-threaded program, interaction with other cores might happen out of order when an instruction that operates on memory finishes executing before a preceding one does.
+
+Apart from these techniques, there can be other proprietary techniques with similar effect.
