@@ -6,3 +6,4 @@ Chapter notes:
 - [[file:ch03/Readme.org][Chapter 3]]
 - [[./ch05/Readme.org][Chapter 5]]
 - [[./ch07/Readme.org][Chapter 7]]
+- [[./ch08/Readme.org][Chapter 8]]
