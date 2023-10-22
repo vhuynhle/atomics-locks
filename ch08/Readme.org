@@ -30,3 +30,9 @@ Synchronization primitives with POSIX pthreads:
 | =pthread_spinlock_t= | [Not discussed]           |
 |----------------------+---------------------------|
 
+From the book: The POSIX API works with C, but difficult in Rust.
+
+* LINUX
+=futex=: Fast Userspace Mutex
+
+
