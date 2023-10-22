@@ -168,3 +168,39 @@ Pipelining :: executing sequential operations in parallel if possible.
 - In multi-threaded program, interaction with other cores might happen out of order when an instruction that operates on memory finishes executing before a preceding one does.
 
 Apart from these techniques, there can be other proprietary techniques with similar effect.
+
+* Summary
+
+Assembly instructions
+
+- Load:
+
+|--------+------------+---------+---------+--------|  
+|        | non-atomic | Relaxed | Acquire | SeqCst |
+|--------+------------+---------+---------+--------|
+| ARMv8  | ldr        | <-      | ldar    | <-     |
+|--------+------------+---------+---------+--------|
+| x86_64 | mov        | <-      | <-      | <-     |
+|--------+------------+---------+---------+--------|
+
+
+- Store:
+|--------+------------+---------+---------+--------|
+|        | non-atomic | Relaxed | Release | SeqCst |
+|--------+------------+---------+---------+--------|
+| ARMv8  | str        | <-      | stlr    | <-     |
+|--------+------------+---------+---------+--------|
+| x86_64 | mov        | <-      | <-      | xchg   |
+|--------+------------+---------+---------+--------|
+
+- Swap:
+
+|---------+------------+----------------+-----------------+-----------------+------------------+--------|
+|         | non-atomic | Relaxed        | Acquire         | Release         | AcqRel           | SeqCst |
+|---------+------------+----------------+-----------------+-----------------+------------------+--------|
+| ARMv8   | ldr str    | ldxr stxr cbnz | ldaxr stxr cbnz | ldxr stlxr cbnz | ldaxr stlxr cbnz | <-     |
+|---------+------------+----------------+-----------------+-----------------+------------------+--------|
+| ARMv8.1 | ldr str    | swp            | swpa            | swpl            | swpal            | <-     |
+|---------+------------+----------------+-----------------+-----------------+------------------+--------|
+| x86_64  | mov mov    | xchg           | <-              | <-              | <-               | <-     |
+|---------+------------+----------------+-----------------+-----------------+------------------+--------|
