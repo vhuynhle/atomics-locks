@@ -35,4 +35,25 @@ From the book: The POSIX API works with C, but difficult in Rust.
 * LINUX
 =futex=: Fast Userspace Mutex
 
+|---------------------+------------------------------------------------------------------|
+| Operation           | Explanation                                                      |
+|---------------------+------------------------------------------------------------------|
+| =FUTEX_WAIT=        | Wait until being waken up or timeout                             |
+| =FUTEX_WAKE=        | Wake up a specified number of threads                            |
+| =FUTEX_WAIT_BITSET= | Similar to =FUTEX_WAIT=, but can select specific wait operations |
+| =FUTEX_WAKE_BITSET= | Similar to =FUTEX_WAKE=, but can select specific wake operations |
+| =FUTEX_REQUEUE=     | Wake up a given number of threads, then =requeues= a given       |
+|                     | number of remaining waiting threads on another atomic variable   |
+| =FUTEX_CMP_REQUEUE= | Simular to =FUTEX_REQUEUE=, but only perform the operation if    |
+|                     | the primary atomic matches a given                               |
+| =FUTEX_WAKE_OP=     | (1) Modify a secondary atomic variable,                          |
+|                     | (2) Wake a number of threads waiting on a primary atomic         |
+|                     | variable,                                                        |
+|                     | (3) Check if the previous value of the atomic variable matches   |
+|                     | a given condition                                                |
+|                     | (4) If so, also wake a number of threads on a secondary atomic   |
+|                     | variable.                                                        |
+|---------------------+------------------------------------------------------------------|
+
+
 
